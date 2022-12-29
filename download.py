@@ -24,8 +24,8 @@ from urllib import parse
 
 from tqdm import tqdm
 
-
-subsets = ["RD", "WDA", "WRA"]
+# subsets = ["RD", "WDA", "WRA"]
+subsets = ["WDA"]
 
 
 def download_hdtf(source_dir: os.PathLike, output_dir: os.PathLike, num_workers: int, **process_video_kwargs):
@@ -39,7 +39,7 @@ def download_hdtf(source_dir: os.PathLike, output_dir: os.PathLike, num_workers:
         **process_video_kwargs,
      ) for vd in download_queue]
     pool = Pool(processes=num_workers)
-    tqdm_kwargs = dict(total=len(task_kwargs), desc=f'Downloading videos into {output_dir} (note: without sound)')
+    tqdm_kwargs = dict(total=len(task_kwargs), desc=f'Downloading videos into {output_dir}')
 
     for _ in tqdm(pool.imap_unordered(task_proxy, task_kwargs), **tqdm_kwargs):
         pass
@@ -167,10 +167,12 @@ def download_video(video_id, download_path, resolution: int=None, video_format="
         stderr = open(log_file, "a")
     video_selection = f"bestvideo[ext={video_format}]"
     video_selection = video_selection if resolution is None else f"{video_selection}[height={resolution}]"
+    audio_selection = f"bestaudio[ext=m4a]"
+    video_audio_selection = video_selection + "+" + audio_selection 
     command = [
         "youtube-dl",
-        "https://youtube.com/watch?v={}".format(video_id), "--quiet", "-f",
-        video_selection,
+        "https://youtube.com/watch?v={}".format(video_id), "-f",
+        video_audio_selection,
         "--output", download_path,
         "--no-continue"
     ]
@@ -231,8 +233,8 @@ def cut_and_crop_video(raw_video_path, output_path, start, end, crop: List[int])
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Download HDTF dataset")
     parser.add_argument('-s', '--source_dir', type=str, default='HDTF_dataset', help='Path to the directory with the dataset')
-    parser.add_argument('-o', '--output_dir', type=str, help='Where to save the videos?')
-    parser.add_argument('-w', '--num_workers', type=int, default=8, help='Number of workers for downloading')
+    parser.add_argument('-o', '--output_dir', type=str, default="all-videos", help='Where to save the videos?')
+    parser.add_argument('-w', '--num_workers', type=int, default=32, help='Number of workers for downloading')
     args = parser.parse_args()
 
     download_hdtf(

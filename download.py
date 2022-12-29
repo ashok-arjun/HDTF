@@ -25,7 +25,7 @@ from urllib import parse
 from tqdm import tqdm
 
 # subsets = ["RD", "WDA", "WRA"]
-subsets = ["WDA"]
+subsets = ["WRA", "WDA"]
 
 
 def download_hdtf(source_dir: os.PathLike, output_dir: os.PathLike, num_workers: int, **process_video_kwargs):
